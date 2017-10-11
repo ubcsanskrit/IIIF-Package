@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>JBIG2 Decoder Test</title>
+    <style>
+      body {
+        background-color: white;
+        text-align: center;
+      }
+      .page-canvas {
+        display: inline-block;
+        margin: 5px;
+        padding: 2px;
+        border: 1px solid lightgray;
+        border-radius: 10px;
+      }
+    </style>
+    <script type="module">
+      import {decodeJbig2, drawToCanvas} from './test.js'
+
+      document.addEventListener('DOMContentLoaded', (event) => {
+        let httpRequest = new XMLHttpRequest()
+        httpRequest.responseType = 'arraybuffer'
+        httpRequest.onreadystatechange = () => {
+          if (httpRequest.readyState === 4) {
+            if (httpRequest.status === 200) {
+              let decodedImgs = decodeJbig2(new Uint8Array(httpRequest.response))
+              decodedImgs.forEach((decodedImg) => {
+                let canvas = document.createElement('canvas')
+                canvas.classList.add('page-canvas')
+                canvas.id = `page_${decodedImg.pageAssociation}`
+                drawToCanvas(canvas, decodedImg, {maxWidth: 600, upsample: 1.5})
+                document.body.appendChild(canvas)
+              })
+            } else {
+              alert('There was a problem with the request.')
+            }
+          }
+        }
+        httpRequest.open('GET', 'test-2p.jb2')
+        httpRequest.send()
+      })
+    </script>
+  </head>
+  <body>
+    <h2>JBIG2 Decoder Test (2-Page)</h2>
+  </body>
+</html>
